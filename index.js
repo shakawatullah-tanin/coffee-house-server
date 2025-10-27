@@ -1,6 +1,6 @@
 const express = require("express");
 
-require("dotenv").config()
+require("dotenv").config();
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
@@ -15,7 +15,6 @@ const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vivw2nj.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -29,16 +28,24 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const database = client.db("coffeesInfo");
 
-    const coffeesCollection = client.db("coffeesInfo").collection("coffees")
+    const coffeesCollection = client.db("coffeesInfo").collection("coffees");
 
-    app.post("/coffees",async(req,res)=>{
+    app.post("/coffees", async (req, res) => {
+      const newCoffee = req.body;
 
-      const newCoffee = req.body
+      const result = await coffeesCollection.insertOne(newCoffee);
+    });
 
-      const result = await coffeesCollection.insertOne(newCoffee)
+    //get data from database
 
-    })
+    app.get("/coffees", async (req, res) => {
+      //find data from mongodb
+      const coffees = await coffeesCollection.find().toArray();
+
+      res.send(coffees);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
